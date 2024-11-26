@@ -1,0 +1,6 @@
+package com.currency.service.entity;
+
+public class CurrencyConversion {
+
+	
+}

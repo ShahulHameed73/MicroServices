@@ -1,0 +1,49 @@
+package com.currency.service.controller;
+
+import java.time.LocalDateTime;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import com.currency.service.entity.CurrencyConversion;
+import com.currency.service.entity.CurrencyExchange;
+import com.currency.service.feign.FeignClientCode;
+import com.currency.service.repository.CurrencyRepo;
+
+public class CurrencyController {
+	@Autowired
+	CurrencyRepo currencyRepo;
+	
+	@Autowired
+	FeignClientCode feignClientCode;
+	
+
+	@GetMapping("/from/{from}/to/{to}/quantity/{quantity}")
+    public ResponseEntity<CurrencyConversion> calculateCurrencyConversion(
+            @PathVariable String from, @PathVariable String to,
+            @PathVariable int quantity) {
+
+		 CurrencyExchange currencyExchange = feignClientCode.retrieveExchangeValue(from, to);
+		 Double conversionMultiple = currencyExchange.getConversionMultiple();
+		
+		  double totalCalculatedAmount = quantity * conversionMultiple;
+		    CurrencyConversion currencyConversion = new CurrencyConversion();
+	        currencyConversion.setFromCurrency(from);
+	        currencyConversion.setToCurrency(to);
+	        currencyConversion.setQuantity(quantity);
+	        currencyConversion.setConversionMultiple(conversionMultiple);
+	        currencyConversion.setTotalCalculatedAmount(totalCalculatedAmount);
+	        currencyConversion.setLocalDateTime(LocalDateTime.now());
+	        
+	        currencyRepo.save(currencyConversion);
+	        return ResponseEntity.status(HttpStatus.OK)
+                    .header("value", "amount calculated....")
+                    .body(currencyConversion);
+	}
+}
+
+	
+}

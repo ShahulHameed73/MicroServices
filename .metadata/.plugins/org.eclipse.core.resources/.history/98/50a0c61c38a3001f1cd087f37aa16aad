@@ -1,0 +1,5 @@
+package com.currency.service.repository;
+
+public class CurrencyRepository {
+
+}
